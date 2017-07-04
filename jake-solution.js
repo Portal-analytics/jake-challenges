@@ -1,8 +1,11 @@
-var num = 0;
-
-for (i = 0; i < 1000; i++) {
-  if (i % 3 == 0 || i % 5 == 0) {
-    num = num + i;
+function getSum() {
+  var sum = 0;
+  for (var i = 0; i < 1000; i++) {
+    if (i % 3 === 0 || i % 5 === 0) {
+      sum += i;
+    }
   }
+  return sum;
 }
-console.log(num);
+
+console.log(getSum());
