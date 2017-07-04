@@ -17,20 +17,12 @@ class App extends Component {
     this.state = {
       index: 0
     };
-
-    this.arrayLength = this.quotes.length;
   }
 
-  onItemClick = index => {
-    if (this.state.index < this.arrayLength - 1) {
-      this.setState({
-        index: this.state.index + 1
-      });
-    } else {
-      this.setState({
-        index: 0
-      });
-    }
+  nextQuote = index => {
+    this.setState({
+      index: (this.state.index + 1) % this.quotes.length
+    });
   };
 
   render() {
@@ -46,7 +38,7 @@ class App extends Component {
     return (
       <div className="App">
         <h2 style={titleStyle}> THIS IS MY TITLE </h2>
-        <div style={quoteStyle} onClick={this.onItemClick}>
+        <div style={quoteStyle} onClick={this.nextQuote}>
           {this.quotes[this.state.index]}
         </div>
       </div>
