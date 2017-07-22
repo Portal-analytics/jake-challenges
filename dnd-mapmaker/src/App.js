@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import { Button, Grid, Input } from "semantic-ui-react";
-import ColorPalette from "./Components/ColorPalette";
+import { GithubPicker } from "react-color";
 
 const makeArray = length => {
   let arr = [];
@@ -20,12 +20,14 @@ class App extends Component {
       rows: [],
       numberColumns: 0,
       columns: [],
-      background: "#fff"
+      paintbrush: "#3A574B",
+      background: "#8D6D28",
+      mouseDown: false
     };
   }
 
   handleChangeComplete = color => {
-    this.setState({ background: color.hex });
+    this.setState({ paintbrush: color.hex });
   };
 
   onRowEntry = event => {
@@ -40,25 +42,52 @@ class App extends Component {
     });
   };
 
-  onSubmit = event => {
+  onSubmit = () => {
     this.setState({
       columns: makeArray(parseFloat(this.state.numberColumns)),
       rows: makeArray(parseFloat(this.state.numberRows))
     });
   };
 
+  onPaint = index => {
+    if (this.state.mouseDown === true) {
+      const updatedRows = Object.assign([...this.state.rows], {
+        [index]: this.state.paintbrush
+      });
+      this.setState({ rows: updatedRows });
+    }
+  };
+
+  onMouseDown = index => {
+    this.setState(
+      {
+        mouseDown: true
+      },
+      () => this.onPaint(index)
+    );
+  };
+
+  onMouseUp = () => {
+    this.setState({
+      mouseDown: false
+    });
+  };
+
   render() {
     const cellStyle = {
-      backgroundColor: this.state.background,
       borderColor: "black",
       borderStyle: "solid",
       position: "absolute",
-      height: "20px",
-      width: "20px"
+      height: "40px",
+      width: "40px"
     };
-
+    const appStyle = {
+      height: "100%",
+      width: "100%",
+      position: "absolute"
+    };
     return (
-      <div className="App">
+      <div className="App" style={appStyle} onMouseUp={() => this.onMouseUp()}>
         <Input
           onChange={numberRows => this.onRowEntry(numberRows)}
           focus
@@ -71,14 +100,22 @@ class App extends Component {
           placeholder="Number of columns"
           value={this.state.numberColumns}
         />
-        <Button onClick={event => this.onSubmit(event)} content="Submit" />
-        <ColorPalette
-          background={this.state.background}
+        <Button onClick={event => this.onSubmit()} content="Submit" />
+        <GithubPicker
+          color={this.state.paintbrush}
           onChangeComplete={this.handleChangeComplete}
         />
         <div>
           {this.state.rows.map((r, index) =>
-            <div style={{ ...cellStyle, left: index * 20 }} />
+            <div
+              style={{
+                ...cellStyle,
+                left: index * 40,
+                backgroundColor: this.state.rows[index]
+              }}
+              onMouseDown={() => this.onMouseDown(index)}
+              onMouseOver={() => this.onPaint(index)}
+            />
           )}
         </div>
       </div>
