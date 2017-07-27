@@ -1,28 +1,56 @@
 import React, { Component } from "react";
 import "./App.css";
 import { Header, Input, Button, Table, Label } from "semantic-ui-react";
+import firebase from "firebase/app";
+import "firebase/database";
 
 class App extends Component {
   constructor() {
     super();
 
+    var config = {
+      apiKey: "AIzaSyD49V6isTLcOBf_mOsUxcrp3TB3qQ6eQ4o",
+      authDomain: "contract-tracker-e5b5d.firebaseapp.com",
+      databaseURL: "https://contract-tracker-e5b5d.firebaseio.com",
+      projectId: "contract-tracker-e5b5d",
+      storageBucket: "",
+      messagingSenderId: "279223235502"
+    };
+
+    this.firebase = firebase.initializeApp(config);
+    this.database = this.firebase.database().ref().child("contracts");
+
     this.state = {
+      contracts: [],
       contractName: "",
       contractDescription: "",
-      contractPrice: "",
-      contracts: []
+      contractPrice: ""
     };
   }
-  onNameEntry = event => {
-    this.setState({
-      contractName: event.target.value
+
+  // lifecyle method for realtime updates from database
+  componentWillMount = () => {
+    const previousContracts = this.state.contracts;
+
+    this.database.on("value", snap => {
+      const val = snap.val() || {};
+      const contracts = Object.keys(val).map(k =>
+        Object.assign({}, val[k], { id: k })
+      );
+
+      this.setState({
+        contracts: contracts
+      });
     });
   };
 
+  // example of writing data with firebase
+  writeContractData = contract => {
+    firebase.database().ref(contract.id).set(contract);
+  };
+
+  // current editting input field
   handleEditingChange = (event, field) => {
-    /* Map over contracts, looking for a contract with contractID. 
-    If contract.id === contractID, then modify contract.name and return contract. 
-    Otherwise, return contract unmodified. */
     const updatedContracts = this.state.contracts.map(contract => {
       return this.state.editingContractID === contract.id
         ? {
@@ -33,6 +61,35 @@ class App extends Component {
     });
 
     this.setState({ contracts: updatedContracts });
+  };
+
+  addContract() {
+    const contractRef = this.database.push();
+
+    contractRef.set({
+      name: this.state.contractName,
+      description: this.state.contractDescription,
+      price: this.state.contractPrice
+    });
+  }
+
+  onEdit = contractID => {
+    this.setState({
+      editingContractID: contractID
+    });
+  };
+
+  onSave = contractID => {
+    this.setState({
+      editingContractID: null
+    });
+  };
+
+  // Input functions
+  onNameEntry = event => {
+    this.setState({
+      contractName: event.target.value
+    });
   };
 
   onDescEntry = event => {
@@ -47,34 +104,7 @@ class App extends Component {
     });
   };
 
-  onSubmit = () => {
-    const newContract = {
-      name: this.state.contractName,
-      description: this.state.contractDescription,
-      price: this.state.contractPrice,
-      id: Math.random()
-    };
-
-    this.setState({
-      contracts: this.state.contracts.concat([newContract]),
-      contractName: "",
-      contractDescription: "",
-      contractPrice: ""
-    });
-  };
-
-  onEdit = contractID => {
-    this.setState({
-      editingContractID: contractID
-    });
-  };
-
-  onSave = contractID => {
-    this.setState({
-      editingContractID: null
-    });
-  };
-
+  // Main render
   render() {
     const inputStyle = {
       padding: "10px"
@@ -115,7 +145,7 @@ class App extends Component {
             <Button
               color="teal"
               style={inputStyle}
-              onClick={() => this.onSubmit()}
+              onClick={() => this.addContract()}
               content="Submit"
             />
           </div>

@@ -3,12 +3,17 @@ import "./App.css";
 import { Button, Grid, Input } from "semantic-ui-react";
 import { GithubPicker } from "react-color";
 
-const makeArray = length => {
-  let arr = [];
-  for (var x = 0; x < length; x++) {
-    arr.push(0);
+const makeArray = (rowLength, columnLength) => {
+  let rows = [];
+
+  for (var x = 0; x < rowLength; x++) {
+    let cells = [];
+    for (var y = 0; y < columnLength; y++) {
+      cells.push(0);
+    }
+    rows.push(cells);
   }
-  return arr;
+  return rows;
 };
 
 class App extends Component {
@@ -16,10 +21,9 @@ class App extends Component {
     super(props);
 
     this.state = {
-      numberRows: 0,
+      numberRows: null,
       rows: [],
-      numberColumns: 0,
-      columns: [],
+      numberColumns: null,
       paintbrush: "#3A574B",
       background: "#8D6D28",
       mouseDown: false
@@ -44,26 +48,31 @@ class App extends Component {
 
   onSubmit = () => {
     this.setState({
-      columns: makeArray(parseFloat(this.state.numberColumns)),
-      rows: makeArray(parseFloat(this.state.numberRows))
+      rows: makeArray(
+        parseFloat(this.state.numberRows),
+        parseFloat(this.state.numberColumns)
+      )
     });
+    console.log(this.state.rows);
   };
 
-  onPaint = index => {
-    if (this.state.mouseDown === true) {
-      const updatedRows = Object.assign([...this.state.rows], {
-        [index]: this.state.paintbrush
-      });
-      this.setState({ rows: updatedRows });
-    }
+  onPaint = (rowIndex, cellIndex) => {
+    const row = this.state.rows[rowIndex];
+    const updatedRow = Object.assign([...row], {
+      [cellIndex]: this.state.paintbrush
+    });
+    const updatedRows = Object.assign([...this.state.rows], {
+      [rowIndex]: updatedRow
+    });
+    this.setState({ rows: updatedRows });
   };
 
-  onMouseDown = index => {
+  onMouseDown = (rowIndex, cellIndex) => {
     this.setState(
       {
         mouseDown: true
       },
-      () => this.onPaint(index)
+      () => this.onPaint(rowIndex, cellIndex)
     );
   };
 
@@ -91,13 +100,13 @@ class App extends Component {
         <Input
           onChange={numberRows => this.onRowEntry(numberRows)}
           focus
-          placeholder="Number of rows"
+          placeholder="Width"
           value={this.state.numberRows}
         />
         <Input
           onChange={numberColumns => this.onColumnEntry(numberColumns)}
           focus
-          placeholder="Number of columns"
+          placeholder="Length"
           value={this.state.numberColumns}
         />
         <Button onClick={event => this.onSubmit()} content="Submit" />
@@ -106,16 +115,23 @@ class App extends Component {
           onChangeComplete={this.handleChangeComplete}
         />
         <div>
-          {this.state.rows.map((r, index) =>
-            <div
-              style={{
-                ...cellStyle,
-                left: index * 40,
-                backgroundColor: this.state.rows[index]
-              }}
-              onMouseDown={() => this.onMouseDown(index)}
-              onMouseOver={() => this.onPaint(index)}
-            />
+          {this.state.rows.map((row, rowIndex) =>
+            <div key={rowIndex}>
+              {row.map((cell, cellIndex) =>
+                <div
+                  key={cellIndex}
+                  style={{
+                    ...cellStyle,
+                    left: rowIndex * 40,
+                    top: 160 + cellIndex * 40,
+                    backgroundColor: cell
+                  }}
+                  onMouseDown={() => this.onMouseDown(rowIndex, cellIndex)}
+                  onMouseOver={() =>
+                    this.state.mouseDown && this.onPaint(rowIndex, cellIndex)}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
