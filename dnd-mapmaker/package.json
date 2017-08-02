@@ -1,12 +1,12 @@
 {
-  "name": "jake-day2",
+  "name": "dnd-mapmaker",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "react": "^15.6.1",
+    "react-color": "^2.13.1",
     "react-dom": "^15.6.1",
     "react-scripts": "1.0.10",
-    "semantic-ui-css": "^2.2.10",
     "semantic-ui-react": "^0.71.0"
   },
   "scripts": {
